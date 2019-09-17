@@ -1,0 +1,73 @@
+Data Scince Final Project: word prediction algorithm
+========================================================
+author: Evgeny Gorelov
+date: 03.06.2019
+autosize: true
+transition: rotate
+
+Task:
+========================================================
+
+Create a data product to show off the prediction algorithm. A Shiny app that accepts an n-gram and predicts the next word should be created and deployed at shinyapps.io.
+
+- Create a database for use by the prediction algorithm using provided text data set
+- Implement the best scheme complying the Shinyapps.io hosting limitations
+- Develop and deploy the application at the Shinyapps.io hosting
+
+N-grams data base
+========================================================
+Prior to construct prediction algorithm a base containing n-grams
+constructed from provided data set (web-crawled english texts, containing predominantely twitter messages, news and blog articles in three corresponding files) should be created. 
+
+- Text preprocessing and ngram generation was done using Quanteda 1.4.3 package
+- N-gram-based profanity filtering was done using  LDNOOBW data set
+- Using Quanteda package, the text corpus was tokenized, 1-grams to 7-grams were constructed, and their frequencies were calculated by means of document-feature matrix
+- Unique N-grams (with frequency=1) were omitted due to strict memory limitations at the Shinyapps.io hosting
+- Resulting ngrams were separated into first (n-1)-gram input part and the last resulting word
+- For each (n-1)-gram input part a prediction word having the largest frequency have been choosen and stored to the resulting data set
+```{r setup, include=FALSE}
+library(data.table)
+setwd("~/Rt/Course10_NLP/code")
+MaxNngram <- 6
+#dtNgramsSort<-rep(list((data.table(ngramInp=character(), answer=character(), freq=integer(), key="ngramInp"))), MaxNngram)
+#dtNgramsSort <- readRDS("dtNgramsSortF6.sav")
+set.seed(1)
+```
+
+```{r}
+#dtNgramsSort[[6]][sample(.N, 5)]
+```
+
+Prediction algorithm
+========================================================
+Using the data set described above, the Stupid Back-Off (SBO) algorithm (Proc. of the 2007 Joint Conf. on Empirical Methods in Natural Language Processing and Computational Natural Language Learning, pp. 858–867, Prague, 2007) has been implemented: the longest matching the input (n-1)gram
+is being selected, the last word of n-gram is used as an answer.
+
+```{r}
+returnWordMEM<-function(inputNgram, inpLen){
+  if(inpLen==0) return("the")  # return the most frequent word "the", 
+  if(inpLen>MaxNngram){ # if no prediction found. If input n-gram is 
+    inpLenN<-inpLen-1   # longer, than the longest available in the 
+    inputNgramN<-sub("^[^_]*_", "" , inputNgram) # data base, remove
+    return(returnWordMEM(inputNgramN, inpLenN)) #  the first word
+  } 
+  ## find all  (inpLen)-grams, starting with  inputNgram,
+  ## and return the most frequent answer (last word)   
+  Output<-dtNgramsSort[[inpLen]][ngramInp==inputNgram, answer]
+
+  if(length(Output)==0) {  # if (inpLen)-gram not found,
+    inpLenN<-inpLen-1      #  remove the first word 
+    inputNgramN<-sub("^[^_]*_", "" , inputNgram) # and search for 
+    return(returnWordMEM(inputNgramN, inpLenN)) # (inpLen-1)-gram
+  }
+  return(Output[1])
+}
+```
+
+The application
+========================================================
+Using the data set and algorithm described above, a Shiny app has been developed and deployed at Shinyapps.io hosting [https://testerhh.shinyapps.io/FinalProjectDataScience/](https://testerhh.shinyapps.io/FinalProjectDataScience/). The apperance of the application is shown below, one can type text or paste n-grams to the input text box; on the change of the input text box the application suggests the next word. 
+
+![The application apperance](ScreenShot.png)
+
+## Thanks for your attention! 
