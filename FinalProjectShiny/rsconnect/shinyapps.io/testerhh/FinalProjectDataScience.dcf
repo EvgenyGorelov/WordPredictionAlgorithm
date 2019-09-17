@@ -1,0 +1,12 @@
+name: FinalProjectDataScience
+title: FinalProjectDataScience
+username:
+account: testerhh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 954800
+bundleId: 2124884
+url: https://testerhh.shinyapps.io/FinalProjectDataScience/
+when: 1559478063.9463
+asMultiple: FALSE
+asStatic: FALSE
